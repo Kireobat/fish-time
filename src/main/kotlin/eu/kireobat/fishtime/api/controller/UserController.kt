@@ -5,8 +5,6 @@ import eu.kireobat.fishtime.api.dto.FishTimeResponseDto
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_PAGE_SIZE_INT
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_SORT_NO_DIRECTION
 import eu.kireobat.fishtime.service.AuthService
-import eu.kireobat.fishtime.service.RoleService
-import eu.kireobat.fishtime.service.UserMapRoleService
 import eu.kireobat.fishtime.service.UserService
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable

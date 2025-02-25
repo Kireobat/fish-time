@@ -1,5 +1,6 @@
 package eu.kireobat.fishtime.persistence.entity
 
+import eu.kireobat.fishtime.api.dto.MeetingDto
 import jakarta.persistence.*
 import java.time.ZonedDateTime
 
@@ -12,19 +13,39 @@ data class MeetingEntity (
     @Column(name="id")
     val id: Int = 0,
     @Column(name="name")
-    val title: String = "",
+    var title: String = "",
     @Column(name="description")
-    val description: String? = null,
+    var description: String? = null,
+    @Column(name="start_time")
+    val startTime: ZonedDateTime = ZonedDateTime.now(),
+    @Column(name="end_time")
+    val endTime: ZonedDateTime = ZonedDateTime.now(),
     @ManyToOne
     @JoinColumn(name="room_id")
-    val room: RoomEntity = RoomEntity(),
+    var room: RoomEntity = RoomEntity(),
     @Column(name="created_time")
     val createdTime: ZonedDateTime = ZonedDateTime.now(),
     @ManyToOne
     @JoinColumn(name="created_by")
     val createdBy: UserEntity = UserEntity(),
     @Column(name="modified_time")
-    val modifiedTime: ZonedDateTime? = null,
-    @Column(name="modified_by")
-    val modifiedBy: UserEntity = UserEntity(),
-)
+    var modifiedTime: ZonedDateTime? = null,
+    @ManyToOne
+    @JoinColumn(name="modified_by")
+    var modifiedBy: UserEntity? = null,
+) {
+    fun toMeetingDto(): MeetingDto {
+        return MeetingDto(
+            id = this.id,
+            title = this.title,
+            description = this.description,
+            startTime = this.startTime,
+            endTime = this.endTime,
+            room = this.room.toRoomDto(),
+            createdTime = this.createdTime,
+            createdBy = this.createdBy.toUserDto(),
+            modifiedTime = this.modifiedTime,
+            modifiedBy = this.modifiedBy?.toUserDto()
+        )
+    }
+}

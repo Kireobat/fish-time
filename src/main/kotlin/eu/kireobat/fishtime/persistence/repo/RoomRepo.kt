@@ -18,18 +18,18 @@ interface RoomRepo: JpaRepository<RoomEntity, String> {
         SELECT * FROM fish_time.rooms r 
         WHERE 
             (r.id = :id OR :id IS NULL) AND 
-            (r.name LIKE COALESCE(CONCAT('%', :name, '%'), '%')) AND 
+            (LOWER(r.name) LIKE COALESCE(CONCAT('%', LOWER(:name), '%'), '%')) AND 
             (r.capacity >= :minCapacity OR :minCapacity IS NULL) AND 
-            (r.address LIKE COALESCE(CONCAT('%', :address, '%'), '%')) AND 
+            (LOWER(r.address) LIKE COALESCE(CONCAT('%', LOWER(:address), '%'), '%')) AND 
             (:activeOnly = false OR r.active = :activeOnly)
     """,
         countQuery = """
         SELECT COUNT(*) FROM fish_time.rooms r 
         WHERE 
             (r.id = :id OR :id IS NULL) AND 
-            (r.name LIKE COALESCE(CONCAT('%', :name, '%'), '%')) AND 
+            (LOWER(r.name) LIKE COALESCE(CONCAT('%', LOWER(:name), '%'), '%')) AND 
             (r.capacity >= :minCapacity OR :minCapacity IS NULL) AND 
-            (r.address LIKE COALESCE(CONCAT('%', :address, '%'), '%')) AND 
+            (LOWER(r.address) LIKE COALESCE(CONCAT('%', LOWER(:address), '%'), '%')) AND 
             (:activeOnly = false OR r.active = :activeOnly)
     """,
         nativeQuery = true

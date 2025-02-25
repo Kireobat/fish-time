@@ -1,11 +1,13 @@
 package eu.kireobat.fishtime.api.controller
 
-import eu.kireobat.fishtime.api.dto.*
+import eu.kireobat.fishtime.api.dto.CreateMeetingDto
+import eu.kireobat.fishtime.api.dto.FishTimePageDto
+import eu.kireobat.fishtime.api.dto.FishTimeResponseDto
+import eu.kireobat.fishtime.api.dto.MeetingDto
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_PAGE_SIZE_INT
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_SORT_NO_DIRECTION
-import eu.kireobat.fishtime.persistence.entity.RoomEntity
 import eu.kireobat.fishtime.service.AuthService
-import eu.kireobat.fishtime.service.RoomService
+import eu.kireobat.fishtime.service.MeetingService
 import eu.kireobat.fishtime.service.UserService
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -25,38 +27,43 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 
 @RestController
-@RequestMapping("/api/v1/")
-class RoomController(private val roomService: RoomService, private val userService: UserService, private val authService: AuthService) {
-    @GetMapping("/rooms")
-    fun getRooms(
+@RequestMapping("/api/v1")
+class MeetingController(
+    private val userService: UserService,
+    private val meetingService: MeetingService,
+    private val authService: AuthService
+) {
+
+    @GetMapping("/meetings")
+    fun getMeetings(
         @ParameterObject @PageableDefault(size = DEFAULT_PAGE_SIZE_INT, sort  = [DEFAULT_SORT_NO_DIRECTION]) pageable: Pageable,
         @RequestParam(name = "id", required = false) id: Int?,
-        @RequestParam(name = "name", required = false) name: String?,
-        @RequestParam(name = "minCapacity", required = false) minCapacity: Int?,
-        @RequestParam(name = "address", required = false) address: String?,
-        @RequestParam(name = "activeOnly", required = true) activeOnly: Boolean = true,
-        ): ResponseEntity<FishTimePageDto<RoomDto>> {
-        return ResponseEntity.ok(roomService.getRooms(pageable,id,name,minCapacity,address,activeOnly))
+        @RequestParam(name = "searchQuery", required = false) searchQuery: String?,
+        @RequestParam(name = "startTime", required = false) startTime: ZonedDateTime?,
+        @RequestParam(name = "endTime", required = false) endTime: ZonedDateTime?,
+        @RequestParam(name = "roomId", required = false) roomId: Int?,
+        @RequestParam(name = "createdBy", required = false) createdBy: Int?,
+        @RequestParam(name = "participants", required = false) participants: List<Int>?
+    ): ResponseEntity<FishTimePageDto<MeetingDto>> {
+        return ResponseEntity.ok(meetingService.getMeetings(pageable, id, searchQuery, startTime, endTime, roomId, createdBy, participants))
     }
-    @PostMapping("/rooms/create")
-    fun createRoom(
+
+    @PostMapping("/meetings/create")
+    fun createMeeting(
         authentication: Authentication?,
-        @RequestBody createRoomDto: CreateRoomDto
-    ): ResponseEntity<RoomDto> {
+        @RequestBody createMeetingDto: CreateMeetingDto
+    ): ResponseEntity<MeetingDto> {
         if (authentication == null) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
 
         val userEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        authService.checkPermissions(userEntity, listOf(0))
-
-        return ResponseEntity.ok(roomService.createRoom(createRoomDto,userEntity).toRoomDto())
-
+        return ResponseEntity.ok(meetingService.createMeeting(createMeetingDto,userEntity).toMeetingDto())
     }
 
-    @DeleteMapping("/rooms/delete")
-    fun deleteRoom(
+    @DeleteMapping("/meetings/delete")
+    fun deleteMeeting(
         authentication: Authentication?,
         @RequestParam(name = "id", required = true) id: Int
     ): ResponseEntity<FishTimeResponseDto> {
@@ -68,24 +75,13 @@ class RoomController(private val roomService: RoomService, private val userServi
 
         authService.checkPermissions(userEntity, listOf(0))
 
-        roomService.deleteRoom(id)
+        meetingService.deleteMeeting(id)
 
-        return ResponseEntity.ok(FishTimeResponseDto(true, ZonedDateTime.now(), HttpStatus.OK, "Room deleted"))
+        return ResponseEntity.ok(FishTimeResponseDto(true, ZonedDateTime.now(),HttpStatus.OK,"Meeting deleted"))
     }
 
-    @PatchMapping("/rooms/patch")
-    fun patchRoom(
-        authentication: Authentication?,
-        @RequestBody updateRoomDto: UpdateRoomDto
-    ): ResponseEntity<RoomDto> {
-        if (authentication == null) {
-            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
-        }
+    @PatchMapping("/meetings/edit")
+    fun editMeeting() {
 
-        val userEntity = userService.findOrRegisterByAuthentication(authentication)
-
-        authService.checkPermissions(userEntity, listOf(0))
-
-        return ResponseEntity.ok(roomService.updateRoom(updateRoomDto, userEntity))
     }
 }
