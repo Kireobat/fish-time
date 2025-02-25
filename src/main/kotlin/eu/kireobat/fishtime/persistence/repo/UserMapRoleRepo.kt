@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface UserMapRoleRepo: JpaRepository<UserMapRoleEntity, String> {
+    fun findAllByUserId(userId: Int): List<UserMapRoleEntity>
 }

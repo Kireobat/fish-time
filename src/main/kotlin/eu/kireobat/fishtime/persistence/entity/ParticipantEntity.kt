@@ -18,5 +18,13 @@ data class ParticipantEntity (
     @JoinColumn(name="meeting_id")
     val meeting: MeetingEntity = MeetingEntity(),
     @Column(name="status")
-    val status: String = ""
+    val status: String = "",
+    @Column(name="created_time")
+    val createdTime: ZonedDateTime = ZonedDateTime.now(),
+    @Column(name="created_by")
+    var createdBy: Int? = null,
+    @Column(name="modified_time")
+    val modifiedTime: ZonedDateTime? = null,
+    @Column(name="modified_by")
+    val modifiedBy: Int? = null,
 )

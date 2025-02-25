@@ -18,11 +18,13 @@ data class MeetingEntity (
     @ManyToOne
     @JoinColumn(name="room_id")
     val room: RoomEntity = RoomEntity(),
+    @Column(name="created_time")
+    val createdTime: ZonedDateTime = ZonedDateTime.now(),
     @ManyToOne
     @JoinColumn(name="created_by")
     val createdBy: UserEntity = UserEntity(),
-    @Column(name="created_time")
-    val createdTime: ZonedDateTime = ZonedDateTime.now(),
     @Column(name="modified_time")
     val modifiedTime: ZonedDateTime? = null,
+    @Column(name="modified_by")
+    val modifiedBy: UserEntity = UserEntity(),
 )

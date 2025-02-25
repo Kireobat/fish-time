@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS fish_time.meetings (
     created_by integer,
     start_time timestamptz NOT NULL,
     end_time timestamptz NOT NULL,
-    created_time timestamptz NOT NULL DEFAULT (now()),
+    created_time timestamptz NOT NULL,
     modified_time timestamptz
 );
 
-create sequence if not exists fish_time.meetings_seq increment by 1 start with 1;
+create sequence if not exists fish_time.meetings_seq increment by 1 start with 10;

@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS fish_time.participants (
     status varchar
 );
 
-create sequence if not exists fish_time.participants increment by 1 start with 1;
+create sequence if not exists fish_time.participants_seq increment by 1 start with 10;

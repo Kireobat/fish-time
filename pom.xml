@@ -37,6 +37,7 @@
         <spring-jdbc.version>6.1.12</spring-jdbc.version>
         <flyway.version>10.17.2</flyway.version>
         <testcontainer.version>1.20.1</testcontainer.version>
+        <java-jwt.version>4.5.0</java-jwt.version>
     </properties>
     <dependencies>
         <dependency>
@@ -172,6 +173,18 @@
         <artifactId>spring-boot-docker-compose</artifactId>
         <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>${java-jwt.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

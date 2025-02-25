@@ -1,9 +1,13 @@
 package eu.kireobat.fishtime.config.security
 
 import eu.kireobat.fishtime.service.CustomOAuth2UserService
+import eu.kireobat.fishtime.service.CustomUserDetailsService
+import eu.kireobat.fishtime.service.UserService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
@@ -12,12 +16,15 @@ import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import org.springframework.security.config.annotation.web.invoke
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 
 @Configuration
 @EnableWebSecurity
-class SecurityConfig (
+class SecurityConfig(
     private val customOAuth2UserService: CustomOAuth2UserService
 ) {
 
@@ -55,6 +62,7 @@ class SecurityConfig (
                 sessionFixation { changeSessionId() }
                 sessionCreationPolicy = SessionCreationPolicy.ALWAYS // Force session creation
             }
+
             logout {
                 logoutSuccessUrl = frontendPath
                 deleteCookies("JSESSIONID")
@@ -83,4 +91,23 @@ class SecurityConfig (
     fun svelteKitAuthSuccessHandler(): AuthenticationSuccessHandler {
         return CustomSvelteKitAuthSuccessHandler()
     }
+
+    @Bean
+    fun passwordEncoder(): PasswordEncoder {
+        return BCryptPasswordEncoder()
+    }
+
+    @Bean
+    fun authenticationManager(
+        http: HttpSecurity,
+        passwordEncoder: PasswordEncoder,
+        customUserDetailsService: CustomUserDetailsService
+    ): AuthenticationManager {
+        val authManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder::class.java)
+        authManagerBuilder
+            .userDetailsService(customUserDetailsService)
+            .passwordEncoder(passwordEncoder)
+        return authManagerBuilder.build()
+    }
+
 }
