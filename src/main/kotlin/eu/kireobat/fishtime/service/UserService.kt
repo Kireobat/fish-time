@@ -114,4 +114,8 @@ class UserService(
             pageable.pageSize
         )
     }
+
+    fun deleteUser(id: Int) {
+        userRepo.deleteById(id.toString())
+    }
 }

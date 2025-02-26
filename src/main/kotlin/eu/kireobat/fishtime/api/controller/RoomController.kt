@@ -3,8 +3,8 @@ package eu.kireobat.fishtime.api.controller
 import eu.kireobat.fishtime.api.dto.*
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_PAGE_SIZE_INT
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_SORT_NO_DIRECTION
-import eu.kireobat.fishtime.persistence.entity.RoomEntity
 import eu.kireobat.fishtime.service.AuthService
+import eu.kireobat.fishtime.service.MeetingService
 import eu.kireobat.fishtime.service.RoomService
 import eu.kireobat.fishtime.service.UserService
 import org.springdoc.core.annotations.ParameterObject
@@ -26,7 +26,12 @@ import java.time.ZonedDateTime
 
 @RestController
 @RequestMapping("/api/v1/")
-class RoomController(private val roomService: RoomService, private val userService: UserService, private val authService: AuthService) {
+class RoomController(
+    private val roomService: RoomService,
+    private val userService: UserService,
+    private val authService: AuthService,
+    private val meetingService: MeetingService
+) {
     @GetMapping("/rooms")
     fun getRooms(
         @ParameterObject @PageableDefault(size = DEFAULT_PAGE_SIZE_INT, sort  = [DEFAULT_SORT_NO_DIRECTION]) pageable: Pageable,
@@ -47,13 +52,13 @@ class RoomController(private val roomService: RoomService, private val userServi
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
 
-        val userEntity = userService.findOrRegisterByAuthentication(authentication)
+        val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0))) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
-        return ResponseEntity.ok(roomService.createRoom(createRoomDto,userEntity).toRoomDto())
+        return ResponseEntity.ok(roomService.createRoom(createRoomDto,authUserEntity).toRoomDto())
 
     }
 
@@ -66,11 +71,13 @@ class RoomController(private val roomService: RoomService, private val userServi
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
 
-        val userEntity = userService.findOrRegisterByAuthentication(authentication)
+        val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0))) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
+
+        meetingService.deleteMeetingsByRoomId(id, authUserEntity)
 
         roomService.deleteRoom(id)
 
@@ -86,12 +93,12 @@ class RoomController(private val roomService: RoomService, private val userServi
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
 
-        val userEntity = userService.findOrRegisterByAuthentication(authentication)
+        val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0))) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
-        return ResponseEntity.ok(roomService.updateRoom(updateRoomDto, userEntity))
+        return ResponseEntity.ok(roomService.updateRoom(updateRoomDto, authUserEntity))
     }
 }

@@ -16,7 +16,10 @@ import java.util.*
 import kotlin.jvm.optionals.getOrElse
 
 @Service
-class RoomService(private val roomRepo: RoomRepo) {
+class RoomService(
+    private val roomRepo: RoomRepo,
+    private val authService: AuthService
+) {
     fun createRoom(createRoomDto: CreateRoomDto, userEntity: UserEntity): RoomEntity {
 
         val errorList = mutableListOf<String>()
@@ -59,6 +62,17 @@ class RoomService(private val roomRepo: RoomRepo) {
 
     fun deleteRoom(id: Int) {
         roomRepo.deleteById(id.toString())
+    }
+
+    fun deleteRoomsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+        if (dataWipe) {
+            roomRepo.deleteAllByCreatedById(deleteUserEntity.id)
+        } else {
+            roomRepo.updateCreatedByForRooms(deleteUserEntity.id, 1)
+        }
     }
 
     fun updateRoom(updateRoomDto: UpdateRoomDto, userEntity: UserEntity): RoomDto {

@@ -69,6 +69,21 @@ class MeetingService(
         meetingRepo.deleteById(id.toString())
     }
 
+    fun deleteMeetingsByRoomId(id: Int, authUserEntity: UserEntity) {
+
+    }
+
+    fun deleteMeetingsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+        if (dataWipe) {
+            meetingRepo.deleteAllByCreatedById(deleteUserEntity.id)
+        } else {
+            meetingRepo.updateCreatedByForMeetings(deleteUserEntity.id, 1)
+        }
+    }
+
     fun getMeetings(pageable: Pageable, id: Int?, searchQuery: String?, startTime: ZonedDateTime?, endTime: ZonedDateTime?, roomId: Int?, createdBy: Int?, participants: List<Int>?): FishTimePageDto<MeetingDto> {
         val spec = Specification.where(MeetingSpecifications.withId(id))
             .and(MeetingSpecifications.withSearchQuery(searchQuery))

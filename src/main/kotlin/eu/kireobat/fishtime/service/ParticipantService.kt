@@ -49,4 +49,15 @@ class ParticipantService(
 
         participantRepo.deleteAllByMeetingId(meetingEntity.id)
     }
+
+    fun deleteParticipantsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+        if (dataWipe) {
+            participantRepo.deleteAllByCreatedById(deleteUserEntity.id)
+        } else {
+            participantRepo.updateCreatedByForParticipants(deleteUserEntity.id, 1)
+        }
+    }
 }
