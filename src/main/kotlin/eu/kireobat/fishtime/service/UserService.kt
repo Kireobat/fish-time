@@ -1,9 +1,15 @@
 package eu.kireobat.fishtime.service
 
 import eu.kireobat.fishtime.api.dto.CreateUserDto
+import eu.kireobat.fishtime.api.dto.FishTimePageDto
 import eu.kireobat.fishtime.api.dto.LoginDto
+import eu.kireobat.fishtime.api.dto.UserDto
 import eu.kireobat.fishtime.persistence.entity.UserEntity
 import eu.kireobat.fishtime.persistence.repo.UserRepo
+import eu.kireobat.fishtime.persistence.spesification.MeetingSpecifications
+import eu.kireobat.fishtime.persistence.spesification.UserSpecifications
+import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -64,7 +70,8 @@ class UserService(
     fun findOrRegisterByAuthentication(authentication: Authentication): UserEntity {
 
         return when (val principal = authentication.principal) {
-            is CustomUserDetails -> userRepo.findByEmail(principal.getEmail()).orElseGet {
+            // email/pass users must have email
+            is CustomUserDetails -> userRepo.findByEmail(principal.getEmail()!!).orElseGet {
                 userRepo.save(UserEntity(
                     username = principal.getUsername(),
                     passwordHash = principal.getPassword(),
@@ -88,5 +95,23 @@ class UserService(
 
     fun findByEmail(email: String): Optional<UserEntity> {
         return userRepo.findByEmail(email)
+    }
+
+    fun findById(id: Int): Optional<UserEntity> {
+        return userRepo.findById(id.toString())
+    }
+
+    fun getUsers(pageable: Pageable, id: Int?, searchQuery: String?): FishTimePageDto<UserDto> {
+        val spec = Specification.where(UserSpecifications.withId(id))
+            .and(UserSpecifications.withSearchQuery(searchQuery))
+
+        val users = userRepo.findAll(spec, pageable)
+
+        return FishTimePageDto(
+            users.content.map { entity -> entity.toUserDto() },
+            users.totalElements,
+            pageable.pageNumber,
+            pageable.pageSize
+        )
     }
 }

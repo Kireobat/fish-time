@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface ParticipantRepo: JpaRepository<ParticipantEntity, String> {
+    fun deleteByUserIdAndMeetingId(userId: Int, meetingId: Int)
+    fun deleteAllByMeetingId(meetingId: Int)
 }

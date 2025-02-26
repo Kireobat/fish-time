@@ -1,13 +1,11 @@
 package eu.kireobat.fishtime.api.controller
 
-import eu.kireobat.fishtime.api.dto.CreateMeetingDto
-import eu.kireobat.fishtime.api.dto.FishTimePageDto
-import eu.kireobat.fishtime.api.dto.FishTimeResponseDto
-import eu.kireobat.fishtime.api.dto.MeetingDto
+import eu.kireobat.fishtime.api.dto.*
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_PAGE_SIZE_INT
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_SORT_NO_DIRECTION
 import eu.kireobat.fishtime.service.AuthService
 import eu.kireobat.fishtime.service.MeetingService
+import eu.kireobat.fishtime.service.ParticipantService
 import eu.kireobat.fishtime.service.UserService
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -15,14 +13,7 @@ import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 
@@ -73,15 +64,27 @@ class MeetingController(
 
         val userEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        authService.checkPermissions(userEntity, listOf(0))
+        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
 
-        meetingService.deleteMeeting(id)
+        meetingService.deleteMeeting(id, userEntity)
 
         return ResponseEntity.ok(FishTimeResponseDto(true, ZonedDateTime.now(),HttpStatus.OK,"Meeting deleted"))
     }
 
-    @PatchMapping("/meetings/edit")
-    fun editMeeting() {
+    @PatchMapping("/meetings/patch")
+    fun editMeeting(
+        authentication: Authentication?,
+        @RequestBody updateMeetingDto: UpdateMeetingDto
+    ): ResponseEntity<MeetingDto> {
 
+        if (authentication == null) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+
+        val userEntity = userService.findOrRegisterByAuthentication(authentication)
+
+        return ResponseEntity.ok(meetingService.updateMeeting(updateMeetingDto,userEntity).toMeetingDto())
     }
 }

@@ -49,7 +49,9 @@ class RoomController(private val roomService: RoomService, private val userServi
 
         val userEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        authService.checkPermissions(userEntity, listOf(0))
+        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
 
         return ResponseEntity.ok(roomService.createRoom(createRoomDto,userEntity).toRoomDto())
 
@@ -66,7 +68,9 @@ class RoomController(private val roomService: RoomService, private val userServi
 
         val userEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        authService.checkPermissions(userEntity, listOf(0))
+        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
 
         roomService.deleteRoom(id)
 
@@ -84,7 +88,9 @@ class RoomController(private val roomService: RoomService, private val userServi
 
         val userEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        authService.checkPermissions(userEntity, listOf(0))
+        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
 
         return ResponseEntity.ok(roomService.updateRoom(updateRoomDto, userEntity))
     }

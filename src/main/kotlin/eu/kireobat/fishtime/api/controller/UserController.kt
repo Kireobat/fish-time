@@ -1,7 +1,9 @@
 package eu.kireobat.fishtime.api.controller
 
 import eu.kireobat.fishtime.api.dto.CreateUserDto
+import eu.kireobat.fishtime.api.dto.FishTimePageDto
 import eu.kireobat.fishtime.api.dto.FishTimeResponseDto
+import eu.kireobat.fishtime.api.dto.UserDto
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_PAGE_SIZE_INT
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_SORT_NO_DIRECTION
 import eu.kireobat.fishtime.service.AuthService
@@ -25,10 +27,10 @@ class UserController(
     @GetMapping("/users")
     fun getUsers(
         @ParameterObject @PageableDefault(size = DEFAULT_PAGE_SIZE_INT, sort  = [DEFAULT_SORT_NO_DIRECTION]) pageable: Pageable,
-        @RequestParam(name = "id", required = false) id: Number?,
-        @RequestParam(name = "searchQuery", required = false) name: String?,
-        ) {
-
+        @RequestParam(name = "id", required = false) id: Int?,
+        @RequestParam(name = "searchQuery", required = false) searchQuery: String?,
+        ): ResponseEntity<FishTimePageDto<UserDto>> {
+        return ResponseEntity.ok(userService.getUsers(pageable,id,searchQuery))
     }
 
     @PostMapping("/users/create")
@@ -43,7 +45,9 @@ class UserController(
 
         val userEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        authService.checkPermissions(userEntity, listOf(0))
+        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
 
         createUserDtoList.forEachIndexed { index, createUserDto ->
             createUserDto.validate(index)

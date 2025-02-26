@@ -16,9 +16,9 @@ data class UserEntity (
     @Column(name="username")
     val username: String = "",
     @Column(name="password_hash")
-    val passwordHash: String = "",
+    val passwordHash: String? = null,
     @Column(name="email")
-    val email: String = "",
+    val email: String? = null,
     @ManyToOne
     @JoinColumn(name="oauth_provider")
     val oauthProvider: OAuthProviderEntity? = null,

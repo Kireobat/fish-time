@@ -1,6 +1,7 @@
 package eu.kireobat.fishtime.persistence.entity
 
 import eu.kireobat.fishtime.api.dto.MeetingDto
+import eu.kireobat.fishtime.api.dto.ParticipantDto
 import jakarta.persistence.*
 import java.time.ZonedDateTime
 
@@ -12,14 +13,14 @@ data class MeetingEntity (
     @SequenceGenerator(name = "meetingsSeq", sequenceName = "meetings_seq", allocationSize = 1)
     @Column(name="id")
     val id: Int = 0,
-    @Column(name="name")
+    @Column(name="title")
     var title: String = "",
     @Column(name="description")
     var description: String? = null,
     @Column(name="start_time")
-    val startTime: ZonedDateTime = ZonedDateTime.now(),
+    var startTime: ZonedDateTime = ZonedDateTime.now(),
     @Column(name="end_time")
-    val endTime: ZonedDateTime = ZonedDateTime.now(),
+    var endTime: ZonedDateTime = ZonedDateTime.now(),
     @ManyToOne
     @JoinColumn(name="room_id")
     var room: RoomEntity = RoomEntity(),
@@ -33,6 +34,9 @@ data class MeetingEntity (
     @ManyToOne
     @JoinColumn(name="modified_by")
     var modifiedBy: UserEntity? = null,
+
+    @OneToMany(mappedBy = "meetingId", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    val participants: MutableList<ParticipantEntity> = mutableListOf()
 ) {
     fun toMeetingDto(): MeetingDto {
         return MeetingDto(
@@ -42,6 +46,7 @@ data class MeetingEntity (
             startTime = this.startTime,
             endTime = this.endTime,
             room = this.room.toRoomDto(),
+            participants = this.participants.map { participantEntity -> participantEntity.toParticipantDto() }.toList(),
             createdTime = this.createdTime,
             createdBy = this.createdBy.toUserDto(),
             modifiedTime = this.modifiedTime,
