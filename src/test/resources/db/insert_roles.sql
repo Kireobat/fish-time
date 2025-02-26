@@ -1,0 +1,1 @@
+INSERT INTO fish_time.roles (name, description, created_time, created_by) VALUES ('employee', 'able to create/delete own meetings', current_date, 0);

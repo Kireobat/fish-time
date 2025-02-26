@@ -1,0 +1,2 @@
+INSERT INTO fish_time.users (username, password_hash, email, created_time, created_by) VALUES ('bot1', 'hash', 'bot1@example.com', current_date, 0);
+INSERT INTO fish_time.users (username, oauth_provider, oauth_id, email, created_time, created_by) VALUES ('bot1',10,999, 'bot1@example.com', current_date, 0);

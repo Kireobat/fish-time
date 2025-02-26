@@ -1,0 +1,1 @@
+INSERT INTO fish_time.oauth_providers (name, created_time, created_by, authorization_url, token_url) VALUES ('GITHUB', current_date, 0, 'https://example.com/auth', 'https://example.com/token');
