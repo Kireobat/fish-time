@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
+import kotlin.jvm.optionals.getOrElse
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -95,10 +96,15 @@ class RoomController(
 
         val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0))) {
+
+        val roomEntity = roomService.getRoomById(updateRoomDto.id).getOrElse {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "room not found")
+        }
+
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != roomEntity.createdBy.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
-        return ResponseEntity.ok(roomService.updateRoom(updateRoomDto, authUserEntity))
+        return ResponseEntity.ok(roomService.updateRoom(roomEntity, authUserEntity, updateRoomDto))
     }
 }

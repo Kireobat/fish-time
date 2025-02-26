@@ -1,9 +1,6 @@
 package eu.kireobat.fishtime.api.controller
 
-import eu.kireobat.fishtime.api.dto.CreateUserDto
-import eu.kireobat.fishtime.api.dto.FishTimePageDto
-import eu.kireobat.fishtime.api.dto.FishTimeResponseDto
-import eu.kireobat.fishtime.api.dto.UserDto
+import eu.kireobat.fishtime.api.dto.*
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_PAGE_SIZE_INT
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_SORT_NO_DIRECTION
 import eu.kireobat.fishtime.service.*
@@ -48,9 +45,9 @@ class UserController(
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
 
-        val userEntity = userService.findOrRegisterByAuthentication(authentication)
+        val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0))) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -59,10 +56,8 @@ class UserController(
         }
 
         for (createUserDto in createUserDtoList) {
-            userService.registerUserByPassword(createUserDto, userEntity)
+            userService.registerUserByPassword(createUserDto, authUserEntity)
         }
-
-
 
         return ResponseEntity.ok(FishTimeResponseDto(true, ZonedDateTime.now(),HttpStatus.CREATED,"User(s) created"))
     }
@@ -83,7 +78,7 @@ class UserController(
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
         }
 
-        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != deleteUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -93,8 +88,30 @@ class UserController(
         roomService.deleteRoomsByCreatedBy(deleteUserEntity, authUserEntity, dataWipe)
         roleService.deleteRolesByCreatedBy(deleteUserEntity, authUserEntity, dataWipe)
 
-        userService.deleteUser(id)
+        userService.deleteUser(deleteUserEntity, authUserEntity)
 
         return ResponseEntity.ok(FishTimeResponseDto(true, ZonedDateTime.now(), HttpStatus.OK, "Room deleted"))
+    }
+
+    @PatchMapping("/users/patch")
+    fun updateUser(
+        authentication: Authentication?,
+        @RequestBody updateUserDto: UpdateUserDto
+    ): ResponseEntity<UserDto> {
+        if (authentication == null) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+
+        val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
+
+        val updateUserEntity = userService.findById(updateUserDto.id).getOrElse {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
+        }
+
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != updateUserEntity.id) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
+        return ResponseEntity.ok(userService.updateUser(updateUserEntity, authUserEntity, updateUserDto).toUserDto())
     }
 }

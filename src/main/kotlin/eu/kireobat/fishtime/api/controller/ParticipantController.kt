@@ -42,7 +42,7 @@ class ParticipantController(
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "user not found")
         }
 
-        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || meetingEntity.createdBy.id != authUserEntity.id) {
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && meetingEntity.createdBy.id != authUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -67,7 +67,7 @@ class ParticipantController(
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "user not found")
         }
 
-        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || meetingEntity.createdBy.id != authUserEntity.id) {
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && meetingEntity.createdBy.id != authUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 

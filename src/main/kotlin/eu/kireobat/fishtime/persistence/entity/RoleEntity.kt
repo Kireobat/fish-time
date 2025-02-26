@@ -17,10 +17,12 @@ data class RoleEntity (
     val description: String? = null,
     @Column(name="created_time")
     val createdTime: ZonedDateTime = ZonedDateTime.now(),
-    @Column(name="created_by")
-    var createdBy: Int? = null,
+    @ManyToOne
+    @JoinColumn(name="created_by")
+    var createdBy: UserEntity = UserEntity(),
     @Column(name="modified_time")
     val modifiedTime: ZonedDateTime? = null,
-    @Column(name="modified_by")
-    val modifiedBy: Int? = null,
+    @ManyToOne
+    @JoinColumn(name="modified_by")
+    val modifiedBy: UserEntity? = null,
 )

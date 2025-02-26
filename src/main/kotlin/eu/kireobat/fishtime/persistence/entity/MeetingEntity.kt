@@ -1,7 +1,6 @@
 package eu.kireobat.fishtime.persistence.entity
 
 import eu.kireobat.fishtime.api.dto.MeetingDto
-import eu.kireobat.fishtime.api.dto.ParticipantDto
 import jakarta.persistence.*
 import java.time.ZonedDateTime
 

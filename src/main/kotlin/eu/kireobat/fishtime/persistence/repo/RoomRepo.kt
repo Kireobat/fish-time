@@ -20,7 +20,7 @@ interface RoomRepo: JpaRepository<RoomEntity, String> {
     @Modifying
     @Transactional
     @Query("UPDATE RoomEntity r SET r.createdBy = :newCreatedBy WHERE r.createdBy = :oldCreatedBy")
-    fun updateCreatedByForRooms(oldCreatedBy: Int, newCreatedBy: Int)
+    fun updateCreatedByForRooms(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
 
     @Query(
         value = """

@@ -20,6 +20,7 @@ class MeetingService(
     private val roomService: RoomService,
     private val authService: AuthService,
     private val participantService: ParticipantService,
+    private val userService: UserService,
 ) {
     fun createMeeting(createMeetingDto: CreateMeetingDto, userEntity: UserEntity): MeetingEntity {
 
@@ -60,7 +61,7 @@ class MeetingService(
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "meeting not found")
         }
 
-        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0)) || meetingEntity.createdBy.id != userEntity.id) {
+        if(!authService.hasSufficientRolePermissions(userEntity, listOf(0)) && meetingEntity.createdBy.id != userEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -74,13 +75,13 @@ class MeetingService(
     }
 
     fun deleteMeetingsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
-        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != deleteUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
         if (dataWipe) {
             meetingRepo.deleteAllByCreatedById(deleteUserEntity.id)
         } else {
-            meetingRepo.updateCreatedByForMeetings(deleteUserEntity.id, 1)
+            meetingRepo.updateCreatedByForMeetings(deleteUserEntity, userService.findById(1).get())
         }
     }
 
@@ -106,14 +107,10 @@ class MeetingService(
         return meetingRepo.findById(id.toString())
     }
 
-    fun updateMeeting(updatedMeetingDto: UpdateMeetingDto, userEntity: UserEntity): MeetingEntity {
+    fun updateMeeting(meetingEntity: MeetingEntity, authUserEntity: UserEntity, updatedMeetingDto: UpdateMeetingDto,): MeetingEntity {
         val errorList = mutableListOf<String>()
 
-        val meetingEntity = meetingRepo.findById(updatedMeetingDto.id.toString()).getOrElse {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, "meeting not found")
-        }
-
-        if (!authService.hasSufficientRolePermissions(userEntity, listOf(0)) || meetingEntity.createdBy.id != userEntity.id) {
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && meetingEntity.createdBy.id != authUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -155,7 +152,7 @@ class MeetingService(
         meetingEntity.description = updatedMeetingDto.description ?: meetingEntity.description
         meetingEntity.startTime = updatedMeetingDto.startTime ?: meetingEntity.startTime
         meetingEntity.endTime = updatedMeetingDto.endTime ?: meetingEntity.endTime
-        meetingEntity.modifiedBy = userEntity
+        meetingEntity.modifiedBy = authUserEntity
         meetingEntity.modifiedTime = ZonedDateTime.now()
 
         return meetingRepo.saveAndFlush(meetingEntity)

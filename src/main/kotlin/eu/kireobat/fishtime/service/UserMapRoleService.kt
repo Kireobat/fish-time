@@ -9,16 +9,17 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class UserMapRoleService(
     private val userMapRoleRepo: UserMapRoleRepo,
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val userService: UserService
 ) {
     fun deleteMappingsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
-        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != deleteUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
         if (dataWipe) {
             userMapRoleRepo.deleteAllByCreatedBy(deleteUserEntity.id)
         } else {
-            userMapRoleRepo.updateCreatedByForMappings(deleteUserEntity.id, 1)
+            userMapRoleRepo.updateCreatedByForMappings(deleteUserEntity, userService.findById(1).get())
         }
     }
 }

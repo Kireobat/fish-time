@@ -1,5 +1,6 @@
 package eu.kireobat.fishtime.persistence.repo
 
+import eu.kireobat.fishtime.persistence.entity.UserEntity
 import eu.kireobat.fishtime.persistence.entity.UserMapRoleEntity
 import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
@@ -15,5 +16,5 @@ interface UserMapRoleRepo: JpaRepository<UserMapRoleEntity, String> {
     @Modifying
     @Transactional
     @Query("UPDATE MeetingEntity r SET r.createdBy = :newCreatedBy WHERE r.createdBy = :oldCreatedBy")
-    fun updateCreatedByForMappings(oldCreatedBy: Int, newCreatedBy: Int)
+    fun updateCreatedByForMappings(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
 }

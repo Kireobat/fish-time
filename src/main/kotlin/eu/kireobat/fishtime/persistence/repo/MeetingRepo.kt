@@ -1,6 +1,7 @@
 package eu.kireobat.fishtime.persistence.repo
 
 import eu.kireobat.fishtime.persistence.entity.MeetingEntity
+import eu.kireobat.fishtime.persistence.entity.UserEntity
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -19,5 +20,5 @@ interface MeetingRepo: JpaRepository<MeetingEntity, String>, JpaSpecificationExe
     @Modifying
     @Transactional
     @Query("UPDATE MeetingEntity r SET r.createdBy = :newCreatedBy WHERE r.createdBy = :oldCreatedBy")
-    fun updateCreatedByForMeetings(oldCreatedBy: Int, newCreatedBy: Int)
+    fun updateCreatedByForMeetings(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
 }

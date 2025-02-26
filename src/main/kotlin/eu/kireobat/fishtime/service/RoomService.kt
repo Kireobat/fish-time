@@ -18,7 +18,8 @@ import kotlin.jvm.optionals.getOrElse
 @Service
 class RoomService(
     private val roomRepo: RoomRepo,
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val userService: UserService
 ) {
     fun createRoom(createRoomDto: CreateRoomDto, userEntity: UserEntity): RoomEntity {
 
@@ -65,17 +66,17 @@ class RoomService(
     }
 
     fun deleteRoomsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
-        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != deleteUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
         if (dataWipe) {
             roomRepo.deleteAllByCreatedById(deleteUserEntity.id)
         } else {
-            roomRepo.updateCreatedByForRooms(deleteUserEntity.id, 1)
+            roomRepo.updateCreatedByForRooms(deleteUserEntity, userService.findById(1).get())
         }
     }
 
-    fun updateRoom(updateRoomDto: UpdateRoomDto, userEntity: UserEntity): RoomDto {
+    fun updateRoom(roomEntity: RoomEntity, userEntity: UserEntity, updateRoomDto: UpdateRoomDto): RoomDto {
 
         val errorList = mutableListOf<String>()
 
@@ -99,10 +100,6 @@ class RoomService(
 
         if (errorList.isNotEmpty()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, errorList.toString())
-        }
-
-        val roomEntity = roomRepo.findById(updateRoomDto.id.toString()).getOrElse {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, "room with id ${updateRoomDto.id} not found")
         }
 
         roomEntity.name = updateRoomDto.name ?: roomEntity.name

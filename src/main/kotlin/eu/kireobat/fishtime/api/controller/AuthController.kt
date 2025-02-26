@@ -82,17 +82,4 @@ class AuthController(
 
         return ResponseEntity.ok(userDto)
     }
-
-    /*
-    {
-        fun toUserDto(): UserDto {
-            return UserDto(
-                id = this.id,
-                username = this.username,
-                email = this.email,
-                createdTime = this.createdTime,
-            )
-        }
-    }
-     */
 }

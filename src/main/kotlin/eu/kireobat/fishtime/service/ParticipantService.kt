@@ -13,12 +13,13 @@ import java.time.ZonedDateTime
 @Service
 class ParticipantService(
     private val participantRepo: ParticipantRepo,
-    private val authService: AuthService
+    private val authService: AuthService,
+    private val userService: UserService
 ) {
 
     fun addParticipant(meetingEntity: MeetingEntity, participantUserEntity: UserEntity, status: String, authUserEntity: UserEntity): ParticipantEntity {
 
-        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || meetingEntity.createdBy.id != authUserEntity.id) {
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && meetingEntity.createdBy.id != authUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -33,7 +34,7 @@ class ParticipantService(
 
     fun removeParticipant(meetingEntity: MeetingEntity, participantUserEntity: UserEntity, authUserEntity: UserEntity) {
 
-        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || meetingEntity.createdBy.id != authUserEntity.id || participantUserEntity.id != authUserEntity.id) {
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && meetingEntity.createdBy.id != authUserEntity.id && participantUserEntity.id != authUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -43,7 +44,7 @@ class ParticipantService(
     @Transactional
     fun removeAllParticipantsFromMeeting(meetingEntity: MeetingEntity, authUserEntity: UserEntity) {
 
-        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || meetingEntity.createdBy.id != authUserEntity.id) {
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && meetingEntity.createdBy.id != authUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
@@ -51,13 +52,13 @@ class ParticipantService(
     }
 
     fun deleteParticipantsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
-        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) || authUserEntity.id == deleteUserEntity.id) {
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != deleteUserEntity.id) {
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
         if (dataWipe) {
             participantRepo.deleteAllByCreatedById(deleteUserEntity.id)
         } else {
-            participantRepo.updateCreatedByForParticipants(deleteUserEntity.id, 1)
+            participantRepo.updateCreatedByForParticipants(deleteUserEntity, userService.findById(1).get())
         }
     }
 }

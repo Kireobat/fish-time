@@ -1,6 +1,7 @@
 package eu.kireobat.fishtime.persistence.repo
 
 import eu.kireobat.fishtime.persistence.entity.ParticipantEntity
+import eu.kireobat.fishtime.persistence.entity.UserEntity
 import jakarta.transaction.Transactional
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -16,5 +17,5 @@ interface ParticipantRepo: JpaRepository<ParticipantEntity, String> {
     @Modifying
     @Transactional
     @Query("UPDATE ParticipantEntity r SET r.createdBy = :newCreatedBy WHERE r.createdBy = :oldCreatedBy")
-    fun updateCreatedByForParticipants(oldCreatedBy: Int, newCreatedBy: Int)
+    fun updateCreatedByForParticipants(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
 }

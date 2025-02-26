@@ -5,7 +5,6 @@ import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_PAGE_SIZE_INT
 import eu.kireobat.fishtime.common.Constants.Companion.DEFAULT_SORT_NO_DIRECTION
 import eu.kireobat.fishtime.service.AuthService
 import eu.kireobat.fishtime.service.MeetingService
-import eu.kireobat.fishtime.service.ParticipantService
 import eu.kireobat.fishtime.service.UserService
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
@@ -16,6 +15,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
+import kotlin.jvm.optionals.getOrElse
 
 @RestController
 @RequestMapping("/api/v1")
@@ -83,8 +83,16 @@ class MeetingController(
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
 
-        val userEntity = userService.findOrRegisterByAuthentication(authentication)
+        val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
 
-        return ResponseEntity.ok(meetingService.updateMeeting(updateMeetingDto,userEntity).toMeetingDto())
+        val meetingEntity = meetingService.findMeetingById(updateMeetingDto.id).getOrElse {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Meeting not found")
+        }
+
+        if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && meetingEntity.createdBy.id != authUserEntity.id) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
+
+        return ResponseEntity.ok(meetingService.updateMeeting(meetingEntity, authUserEntity, updateMeetingDto).toMeetingDto())
     }
 }

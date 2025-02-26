@@ -14,11 +14,11 @@ data class UserEntity (
     @Column(name="id")
     val id: Int = 0,
     @Column(name="username")
-    val username: String = "",
+    var username: String = "",
     @Column(name="password_hash")
-    val passwordHash: String? = null,
+    var passwordHash: String? = null,
     @Column(name="email")
-    val email: String? = null,
+    var email: String? = null,
     @ManyToOne
     @JoinColumn(name="oauth_provider")
     val oauthProvider: OAuthProviderEntity? = null,
@@ -29,9 +29,9 @@ data class UserEntity (
     @Column(name="created_by")
     var createdBy: Int? = null,
     @Column(name="modified_time")
-    val modifiedTime: ZonedDateTime? = null,
+    var modifiedTime: ZonedDateTime? = null,
     @Column(name="modified_by")
-    val modifiedBy: Int? = null,
+    var modifiedBy: Int? = null,
 ): Serializable {
     fun toUserDto(): UserDto {
         return UserDto(
