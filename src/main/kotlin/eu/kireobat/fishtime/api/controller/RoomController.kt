@@ -97,7 +97,7 @@ class RoomController(
         val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
 
 
-        val roomEntity = roomService.getRoomById(updateRoomDto.id).getOrElse {
+        val roomEntity = roomService.findRoomById(updateRoomDto.id).getOrElse {
             throw ResponseStatusException(HttpStatus.NOT_FOUND, "room not found")
         }
 

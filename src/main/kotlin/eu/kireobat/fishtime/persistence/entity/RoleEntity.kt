@@ -10,9 +10,9 @@ data class RoleEntity (
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "rolesSeq")
     @SequenceGenerator(name = "rolesSeq", sequenceName = "roles_seq", allocationSize = 1)
     @Column(name="id")
-    val id: Int = 0,
+    var id: Int = 0,
     @Column(name="name")
-    val name: String = "",
+    var name: String = "",
     @Column(name="description")
     val description: String? = null,
     @Column(name="created_time")

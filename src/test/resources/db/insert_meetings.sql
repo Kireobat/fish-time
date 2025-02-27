@@ -1,0 +1,3 @@
+INSERT INTO fish_time.meetings (id,title, description, room_id, created_by, start_time, end_time, created_time) VALUES (10,'My meeting', 'this is my meeting', 10, 0, current_date, current_date, current_date);
+INSERT INTO fish_time.meetings (id,title, description, room_id, created_by, start_time, end_time, created_time) VALUES (11,'My meeting2', 'this is my meeting', 11, 0, current_date, current_date, current_date);
+INSERT INTO fish_time.meetings (id,title, description, room_id, created_by, start_time, end_time, created_time) VALUES (12,'My meeting3', 'this is my meeting', 10, 0, current_date, current_date, current_date);

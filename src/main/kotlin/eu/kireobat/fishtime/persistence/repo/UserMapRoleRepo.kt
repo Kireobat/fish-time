@@ -11,10 +11,12 @@ import org.springframework.stereotype.Repository
 @Repository
 interface UserMapRoleRepo: JpaRepository<UserMapRoleEntity, String> {
     fun findAllByUserId(userId: Int): List<UserMapRoleEntity>
+    fun findAllByCreatedBy(id: Int): List<UserMapRoleEntity>
+    @Transactional
     fun deleteAllByCreatedBy(id: Int)
 
     @Modifying
     @Transactional
-    @Query("UPDATE MeetingEntity r SET r.createdBy = :newCreatedBy WHERE r.createdBy = :oldCreatedBy")
-    fun updateCreatedByForMappings(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
+    @Query("UPDATE UserMapRoleEntity e SET e.createdBy = :newCreatedBy WHERE e.createdBy = :oldCreatedBy")
+    fun updateCreatedByForMappings(oldCreatedBy: Int, newCreatedBy: Int)
 }

@@ -11,7 +11,7 @@ data class RoomEntity (
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "roomsSeq")
     @SequenceGenerator(name = "roomsSeq", sequenceName = "rooms_seq", allocationSize = 1)
     @Column(name="id")
-    val id: Int = 0,
+    var id: Int = 0,
     @Column(name="name")
     var name: String = "",
     @Column(name="capacity")

@@ -1,5 +1,8 @@
 package eu.kireobat.fishtime
 
+import jakarta.persistence.EntityManager
+import jakarta.persistence.PersistenceContext
+import jakarta.transaction.Transactional
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.util.TestPropertyValues
 import org.springframework.context.ApplicationContextInitializer

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import java.util.*
-import kotlin.jvm.optionals.getOrElse
 
 @Service
 class RoomService(
@@ -21,7 +20,11 @@ class RoomService(
     private val authService: AuthService,
     private val userService: UserService
 ) {
-    fun createRoom(createRoomDto: CreateRoomDto, userEntity: UserEntity): RoomEntity {
+    fun createRoom(createRoomDto: CreateRoomDto, authUserEntity: UserEntity): RoomEntity {
+
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0))) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
 
         val errorList = mutableListOf<String>()
 
@@ -38,14 +41,12 @@ class RoomService(
         if (errorList.isNotEmpty()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, errorList.toString())
         }
-
-
         return roomRepo.saveAndFlush(RoomEntity(
             name = createRoomDto.name,
             capacity = createRoomDto.capacity,
             address = createRoomDto.address,
             active = createRoomDto.active,
-            createdBy = userEntity
+            createdBy = authUserEntity
         ))
     }
 
@@ -76,7 +77,11 @@ class RoomService(
         }
     }
 
-    fun updateRoom(roomEntity: RoomEntity, userEntity: UserEntity, updateRoomDto: UpdateRoomDto): RoomDto {
+    fun updateRoom(roomEntity: RoomEntity, authUserEntity: UserEntity, updateRoomDto: UpdateRoomDto): RoomDto {
+
+        if (!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && roomEntity.createdBy.id != authUserEntity.id) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        }
 
         val errorList = mutableListOf<String>()
 
@@ -106,13 +111,13 @@ class RoomService(
         roomEntity.capacity = updateRoomDto.capacity ?: roomEntity.capacity
         roomEntity.address = updateRoomDto.address ?: roomEntity.address
         roomEntity.active = updateRoomDto.active ?: roomEntity.active
-        roomEntity.modifiedBy = userEntity
+        roomEntity.modifiedBy = authUserEntity
         roomEntity.modifiedTime = ZonedDateTime.now()
 
         return roomRepo.saveAndFlush(roomEntity).toRoomDto()
     }
 
-    fun getRoomById(id: Int): Optional<RoomEntity> {
+    fun findRoomById(id: Int): Optional<RoomEntity> {
         return roomRepo.findById(id.toString())
     }
 }

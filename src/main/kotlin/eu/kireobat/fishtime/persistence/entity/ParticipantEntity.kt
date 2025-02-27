@@ -13,9 +13,9 @@ data class ParticipantEntity (
     @Column(name="id")
     val id: Int = 0,
     @JoinColumn(name="user_id")
-    val userId: Int = 0,
+    var userId: Int = 0,
     @JoinColumn(name="meeting_id")
-    val meetingId: Int = 0,
+    var meetingId: Int = 0,
     @Column(name="status")
     val status: String = "",
     @Column(name="created_time")

@@ -1,3 +1,4 @@
 INSERT INTO fish_time.users (id, username, password_hash, email, oauth_provider, oauth_id, created_time, modified_time, created_by, modified_by) VALUES (0, 'SYSTEM', null, null, null, null, current_date, null, null, null) ON CONFLICT (id) DO NOTHING;
 INSERT INTO fish_time.users (id, username, password_hash, email, oauth_provider, oauth_id, created_time, modified_time, created_by, modified_by) VALUES (1, 'DELETED', null, null, null, null, current_date, null, null, null) ON CONFLICT (id) DO NOTHING;
 INSERT INTO fish_time.roles (id, name, description, created_time, modified_time, created_by, modified_by) VALUES (0, 'admin','role with all permissions', current_date, null,0, null) ON CONFLICT (id) DO NOTHING;
+INSERT INTO fish_time.users_map_roles (id, user_id, role_id, created_time, created_by) VALUES (1, 0, 0, current_date, 0);

@@ -30,7 +30,7 @@ class MeetingService(
             errorList.add("title can't be empty")
         }
 
-        val roomEntity = roomService.getRoomById(createMeetingDto.roomId)
+        val roomEntity = roomService.findRoomById(createMeetingDto.roomId)
 
         if (roomEntity.isEmpty) {
             errorList.add("room does not exist")
@@ -141,7 +141,7 @@ class MeetingService(
         }
 
         if (updatedMeetingDto.roomId != null) {
-            val roomEntity = roomService.getRoomById(updatedMeetingDto.roomId).getOrElse {
+            val roomEntity = roomService.findRoomById(updatedMeetingDto.roomId).getOrElse {
                 throw ResponseStatusException(HttpStatus.NOT_FOUND, "room with id ${updatedMeetingDto.roomId} not found")
             }
 

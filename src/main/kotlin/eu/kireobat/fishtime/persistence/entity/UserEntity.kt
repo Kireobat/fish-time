@@ -12,7 +12,7 @@ data class UserEntity (
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "usersSeq")
     @SequenceGenerator(name = "usersSeq", sequenceName = "users_seq", allocationSize = 1)
     @Column(name="id")
-    val id: Int = 0,
+    var id: Int = 0,
     @Column(name="username")
     var username: String = "",
     @Column(name="password_hash")

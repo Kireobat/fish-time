@@ -10,10 +10,12 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface RoleRepo: JpaRepository<RoleEntity, String> {
+    fun findAllByCreatedById(id: Int): List<RoleEntity>
+    @Transactional
     fun deleteAllByCreatedById(id: Int)
 
     @Modifying
     @Transactional
-    @Query("UPDATE RoleEntity r SET r.createdBy = :newCreatedBy WHERE r.createdBy = :oldCreatedBy")
+    @Query("UPDATE RoleEntity e SET e.createdBy = :newCreatedBy WHERE e.createdBy = :oldCreatedBy")
     fun updateCreatedByForRoles(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
 }

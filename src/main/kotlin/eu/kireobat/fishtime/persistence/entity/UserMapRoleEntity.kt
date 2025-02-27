@@ -13,10 +13,10 @@ data class UserMapRoleEntity (
     val id: Int = 0,
     @ManyToOne
     @JoinColumn(name="user_id")
-    val user: UserEntity = UserEntity(),
+    var user: UserEntity = UserEntity(),
     @ManyToOne
     @JoinColumn(name="role_id")
-    val role: RoleEntity = RoleEntity(),
+    var role: RoleEntity = RoleEntity(),
     @Column(name="created_time")
     val createdTime: ZonedDateTime = ZonedDateTime.now(),
     @Column(name="created_by")

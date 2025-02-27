@@ -11,7 +11,7 @@ data class MeetingEntity (
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "meetingsSeq")
     @SequenceGenerator(name = "meetingsSeq", sequenceName = "meetings_seq", allocationSize = 1)
     @Column(name="id")
-    val id: Int = 0,
+    var id: Int = 0,
     @Column(name="title")
     var title: String = "",
     @Column(name="description")
@@ -27,7 +27,7 @@ data class MeetingEntity (
     val createdTime: ZonedDateTime = ZonedDateTime.now(),
     @ManyToOne
     @JoinColumn(name="created_by")
-    val createdBy: UserEntity = UserEntity(),
+    var createdBy: UserEntity = UserEntity(),
     @Column(name="modified_time")
     var modifiedTime: ZonedDateTime? = null,
     @ManyToOne

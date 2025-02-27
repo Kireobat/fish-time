@@ -9,8 +9,7 @@ import org.springframework.web.server.ResponseStatusException
 @Service
 class UserMapRoleService(
     private val userMapRoleRepo: UserMapRoleRepo,
-    private val authService: AuthService,
-    private val userService: UserService
+    private val authService: AuthService
 ) {
     fun deleteMappingsByCreatedBy(deleteUserEntity: UserEntity, authUserEntity: UserEntity, dataWipe:Boolean) {
         if(!authService.hasSufficientRolePermissions(authUserEntity, listOf(0)) && authUserEntity.id != deleteUserEntity.id) {
@@ -19,7 +18,7 @@ class UserMapRoleService(
         if (dataWipe) {
             userMapRoleRepo.deleteAllByCreatedBy(deleteUserEntity.id)
         } else {
-            userMapRoleRepo.updateCreatedByForMappings(deleteUserEntity, userService.findById(1).get())
+            userMapRoleRepo.updateCreatedByForMappings(deleteUserEntity.id, 1)
         }
     }
 }

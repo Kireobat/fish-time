@@ -19,6 +19,6 @@ interface MeetingRepo: JpaRepository<MeetingEntity, String>, JpaSpecificationExe
 
     @Modifying
     @Transactional
-    @Query("UPDATE MeetingEntity r SET r.createdBy = :newCreatedBy WHERE r.createdBy = :oldCreatedBy")
+    @Query("UPDATE MeetingEntity e SET e.createdBy = :newCreatedBy WHERE e.createdBy = :oldCreatedBy")
     fun updateCreatedByForMeetings(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
 }
