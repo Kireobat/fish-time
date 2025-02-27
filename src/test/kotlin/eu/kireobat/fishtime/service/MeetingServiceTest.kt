@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpStatus
 import org.springframework.web.server.ResponseStatusException
 import java.time.ZonedDateTime
 import javax.sql.DataSource
@@ -113,4 +114,158 @@ class MeetingServiceTest: TestContainerConfiguration() {
         assertTrue(meetingPage.page.isNotEmpty())
         assertTrue(meetingPage.totalItems > 0)
     }
+    @Test
+        @Transactional
+        fun `should prevent regular user from double booking a room`() {
+            // Given
+            val startTime = ZonedDateTime.now().plusHours(1)
+            val endTime = ZonedDateTime.now().plusHours(2)
+            
+            // Create first meeting
+            val firstMeetingDto = CreateMeetingDto(
+                title = "First Meeting", 
+                description = "This is the first meeting",
+                roomId = testRoom.id,
+                startTime = startTime,
+                endTime = endTime
+            )
+            meetingService.createMeeting(firstMeetingDto, systemUser)
+            
+            // Try to create an overlapping meeting as regular user
+            val overlappingMeetingDto = CreateMeetingDto(
+                title = "Overlapping Meeting", 
+                description = "This should fail for regular users",
+                roomId = testRoom.id,
+                startTime = startTime.plusMinutes(30),
+                endTime = endTime.plusMinutes(30)
+            )
+            
+            // When/Then
+            val exception = assertThrows(ResponseStatusException::class.java) {
+                meetingService.createMeeting(overlappingMeetingDto, regularUser)
+            }
+            assertEquals(HttpStatus.BAD_REQUEST, exception.statusCode)
+            assertTrue(exception.reason?.contains("Room is already booked") == true)
+        }
+
+        @Test
+        @Transactional
+        fun `should allow admin to double book a room`() {
+            // Given
+            val startTime = ZonedDateTime.now().plusHours(1)
+            val endTime = ZonedDateTime.now().plusHours(2)
+            
+            // Create first meeting
+            val firstMeetingDto = CreateMeetingDto(
+                title = "First Meeting", 
+                description = "This is the first meeting",
+                roomId = testRoom.id,
+                startTime = startTime,
+                endTime = endTime
+            )
+            meetingService.createMeeting(firstMeetingDto, regularUser)
+            
+            // Try to create an overlapping meeting as admin user
+            val overlappingMeetingDto = CreateMeetingDto(
+                title = "Admin Overlapping Meeting", 
+                description = "This should succeed for admin users",
+                roomId = testRoom.id,
+                startTime = startTime.plusMinutes(30),
+                endTime = endTime.plusMinutes(30)
+            )
+            
+            // When - this should not throw an exception
+            val createdMeeting = meetingService.createMeeting(overlappingMeetingDto, systemUser)
+            
+            // Then
+            assertNotNull(createdMeeting)
+            assertEquals("Admin Overlapping Meeting", createdMeeting.title)
+            assertEquals(testRoom.id, createdMeeting.room.id)
+        }
+
+        @Test
+        @Transactional
+        fun `should detect various overlap scenarios for regular users`() {
+            // Given
+            val baseStart = ZonedDateTime.now().plusHours(1)
+            val baseEnd = ZonedDateTime.now().plusHours(3)
+            
+            // Create a baseline meeting
+            val baseMeetingDto = CreateMeetingDto(
+                title = "Base Meeting",
+                description = "2-hour meeting",
+                roomId = testRoom.id,
+                startTime = baseStart,
+                endTime = baseEnd
+            )
+            meetingService.createMeeting(baseMeetingDto, systemUser)
+            
+            // Test different overlap scenarios
+            val overlapScenarios = listOf(
+                Pair("Complete overlap", Pair(baseStart.plusMinutes(30), baseEnd.minusMinutes(30))),
+                Pair("Partial overlap at start", Pair(baseStart.minusHours(1), baseStart.plusHours(1))),
+                Pair("Partial overlap at end", Pair(baseEnd.minusHours(1), baseEnd.plusHours(1))),
+                Pair("Surrounding overlap", Pair(baseStart.minusHours(1), baseEnd.plusHours(1)))
+            )
+            
+            for ((scenarioName, times) in overlapScenarios) {
+                val overlappingDto = CreateMeetingDto(
+                    title = "Overlapping Meeting - $scenarioName",
+                    description = "This should fail",
+                    roomId = testRoom.id,
+                    startTime = times.first,
+                    endTime = times.second
+                )
+                
+                val exception = assertThrows(ResponseStatusException::class.java) {
+                    meetingService.createMeeting(overlappingDto, regularUser)
+                }
+                assertEquals(HttpStatus.BAD_REQUEST, exception.statusCode, "Failed on scenario: $scenarioName")
+            }
+        }
+
+        @Test
+        @Transactional
+        fun `should allow booking adjacent time slots`() {
+            // Given
+            val firstMeetingStart = ZonedDateTime.now().plusHours(1)
+            val firstMeetingEnd = ZonedDateTime.now().plusHours(2)
+            
+            // Create first meeting
+            val firstMeetingDto = CreateMeetingDto(
+                title = "First Meeting",
+                description = "This is the first meeting",
+                roomId = testRoom.id,
+                startTime = firstMeetingStart,
+                endTime = firstMeetingEnd
+            )
+            meetingService.createMeeting(firstMeetingDto, regularUser)
+            
+            // Try to create adjacent meetings (should succeed)
+            val beforeMeetingDto = CreateMeetingDto(
+                title = "Before Meeting",
+                description = "Meeting right before first meeting",
+                roomId = testRoom.id,
+                startTime = firstMeetingStart.minusHours(1),
+                endTime = firstMeetingStart
+            )
+            
+            val afterMeetingDto = CreateMeetingDto(
+                title = "After Meeting",
+                description = "Meeting right after first meeting",
+                roomId = testRoom.id,
+                startTime = firstMeetingEnd,
+                endTime = firstMeetingEnd.plusHours(1)
+            )
+            
+            // When
+            val beforeMeeting = meetingService.createMeeting(beforeMeetingDto, regularUser)
+            val afterMeeting = meetingService.createMeeting(afterMeetingDto, regularUser)
+            
+            // Then
+            assertNotNull(beforeMeeting)
+            assertNotNull(afterMeeting)
+            assertEquals("Before Meeting", beforeMeeting.title)
+            assertEquals("After Meeting", afterMeeting.title)
+        }
 }

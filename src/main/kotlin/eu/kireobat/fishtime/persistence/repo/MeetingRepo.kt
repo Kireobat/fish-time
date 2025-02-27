@@ -21,4 +21,11 @@ interface MeetingRepo: JpaRepository<MeetingEntity, String>, JpaSpecificationExe
     @Transactional
     @Query("UPDATE MeetingEntity e SET e.createdBy = :newCreatedBy WHERE e.createdBy = :oldCreatedBy")
     fun updateCreatedByForMeetings(oldCreatedBy: UserEntity, newCreatedBy: UserEntity)
+
+    @Query("SELECT m FROM MeetingEntity m WHERE m.room.id = :roomId AND m.endTime > :startTime AND m.startTime < :endTime")
+    fun findOverlappingMeetings(
+        @Param("roomId") roomId: String,
+        @Param("startTime") startTime: ZonedDateTime,
+        @Param("endTime") endTime: ZonedDateTime
+    ): List<MeetingEntity>
 }

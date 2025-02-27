@@ -40,6 +40,20 @@ class MeetingService(
             errorList.add("endTime can't be less than startTime")
         }
 
+        // Only check for double booking if user is not an admin
+        if (!authService.hasSufficientRolePermissions(userEntity, listOf(0))) {
+            // Check if there are any overlapping meetings for this room
+            val overlappingMeetings = meetingRepo.findOverlappingMeetings(
+                roomId = createMeetingDto.roomId.toString(),
+                startTime = createMeetingDto.startTime,
+                endTime = createMeetingDto.endTime
+            )
+            
+            if (overlappingMeetings.isNotEmpty()) {
+                errorList.add("Room is already booked during this time period")
+            }
+        }
+
         if (errorList.isNotEmpty()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, errorList.toString())
         }
