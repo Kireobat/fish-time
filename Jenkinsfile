@@ -134,7 +134,8 @@ pipeline {
                                     "HostConfig": {
                                         "PortBindings": {
                                             "8080/tcp": [${hostPort ? '{"HostPort": "' + hostPort + '"}' : '{}'}]
-                                        }
+                                        },
+                                        "NetworkMode": "nginxproxymanager_default"
                                     }
                                 }"""
                             )
