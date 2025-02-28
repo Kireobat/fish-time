@@ -47,7 +47,13 @@ object MeetingSpecifications {
             if (startTime == null || endTime == null) {
                 return@Specification null
             }
-            criteriaBuilder.between(root.get("startTime"), startTime, endTime)
+            // Meeting overlaps with the range if:
+            // 1. The meeting starts before the range ends AND
+            // 2. The meeting ends after the range starts
+            criteriaBuilder.and(
+                criteriaBuilder.lessThan(root.get("startTime"), endTime),
+                criteriaBuilder.greaterThan(root.get("endTime"), startTime)
+            )
         }
     }
 
