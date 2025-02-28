@@ -5,7 +5,7 @@ import java.time.ZonedDateTime
 
 data class ParticipantDto (
     val id: Int,
-    val userId: Int,
+    val user: UserDto,
     val meetingId: Int,
     val status: String,
     @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ss.SSSX")

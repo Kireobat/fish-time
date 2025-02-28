@@ -12,8 +12,9 @@ data class ParticipantEntity (
     @SequenceGenerator(name = "participantsSeq", sequenceName = "participants_seq", allocationSize = 1)
     @Column(name="id")
     val id: Int = 0,
+    @ManyToOne
     @JoinColumn(name="user_id")
-    var userId: Int = 0,
+    var user: UserEntity = UserEntity(),
     @JoinColumn(name="meeting_id")
     var meetingId: Int = 0,
     @Column(name="status")
@@ -32,7 +33,7 @@ data class ParticipantEntity (
     fun toParticipantDto() : ParticipantDto {
         return ParticipantDto(
             id = this.id,
-            userId = this.userId,
+            user = this.user.toUserDto(),
             meetingId = this.meetingId,
             status = this.status,
             createdTime = this.createdTime,

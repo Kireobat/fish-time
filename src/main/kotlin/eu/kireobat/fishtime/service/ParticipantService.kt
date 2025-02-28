@@ -28,7 +28,7 @@ class ParticipantService(
         }
 
         return participantRepo.saveAndFlush(ParticipantEntity(
-            userId = participantUserEntity.id,
+            user = participantUserEntity,
             meetingId = meetingEntity.id,
             status = status,
             createdBy = authUserEntity,

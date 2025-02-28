@@ -67,7 +67,7 @@ class ParticipantServiceTest: TestContainerConfiguration() {
         
         // Then
         assertNotNull(participant)
-        assertEquals(regularUser.id, participant.userId)
+        assertEquals(regularUser.id, participant.user.id)
         assertEquals(testMeeting.id, participant.meetingId)
         
         // Verify it was stored in database
