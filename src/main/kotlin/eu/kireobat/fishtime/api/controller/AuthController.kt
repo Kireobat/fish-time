@@ -4,8 +4,7 @@ import eu.kireobat.fishtime.api.dto.CreateUserDto
 import eu.kireobat.fishtime.api.dto.FishTimeResponseDto
 import eu.kireobat.fishtime.api.dto.LoginDto
 import eu.kireobat.fishtime.api.dto.UserDto
-import eu.kireobat.fishtime.persistence.entity.UserEntity
-import eu.kireobat.fishtime.service.CustomUserDetails
+import eu.kireobat.fishtime.service.AuthService
 import eu.kireobat.fishtime.service.UserService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpStatus
@@ -14,7 +13,6 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -24,7 +22,8 @@ import java.time.ZonedDateTime
 @RequestMapping("/api/v1")
 class AuthController(
     private val userService: UserService,
-    private val authenticationManager: AuthenticationManager
+    private val authenticationManager: AuthenticationManager,
+    private val authService: AuthService
 ) {
     @PostMapping("/login")
     fun login(@RequestBody loginDto: LoginDto,
@@ -81,5 +80,21 @@ class AuthController(
         )
 
         return ResponseEntity.ok(userDto)
+    }
+
+    @GetMapping("/isAdmin")
+    fun getAdminStatus(authentication: Authentication?): ResponseEntity<Boolean> {
+
+        if (authentication == null) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+
+        val authUserEntity = userService.findOrRegisterByAuthentication(authentication)
+
+        if(authService.hasSufficientRolePermissions(authUserEntity, listOf(0))) {
+            return ResponseEntity.ok(true)
+        }
+
+        return ResponseEntity.ok(false)
     }
 }
