@@ -23,7 +23,7 @@ class ParticipantService(
             throw ResponseStatusException(HttpStatus.FORBIDDEN)
         }
 
-        if (participantRepo.findByUserIdAndMeetingId(participantUserEntity.id, participantUserEntity.id).isPresent) {
+        if (participantRepo.findByUserIdAndMeetingId(participantUserEntity.id, meetingEntity.id).isPresent) {
             throw ResponseStatusException(HttpStatus.CONFLICT, "Already a participant")
         }
 

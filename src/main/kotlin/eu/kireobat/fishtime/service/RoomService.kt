@@ -88,7 +88,7 @@ class RoomService(
         if (updateRoomDto.name != null) {
             if (updateRoomDto.name.isBlank()) {
                 errorList.add("name can't be empty")
-            } else if (roomRepo.findByName(updateRoomDto.name).isPresent) {
+            } else if (roomRepo.findByName(updateRoomDto.name).isPresent && roomRepo.findByName(updateRoomDto.name).get().id != updateRoomDto.id)  {
                 errorList.add("room already exists")
             }
         }
